@@ -10,25 +10,38 @@ fi
 
 cat > Caddyfile <<CADDY
 ${HOSTNAME} {
-    root * /usr/share/nginx/html
-    file_server
+    handle_path /_matrix/* {
+        reverse_proxy synapse:8008
+    }
+
+    handle {
+        reverse_proxy element:80
+    }
 }
 CADDY
 
-cat > docker-compose.yml <<'COMPOSE'
+cat > docker-compose.yml <<COMPOSE
 version: "3.8"
 services:
   element:
     image: vectorim/element-web:latest
+    restart: unless-stopped
+
+  synapse:
+    image: matrixdotorg/synapse:latest
+    environment:
+      - SYNAPSE_SERVER_NAME=${HOSTNAME}
     volumes:
-      - ./element:/usr/share/nginx/html
+      - ./synapse:/data
     restart: unless-stopped
 
   caddy:
     image: caddy:latest
+    depends_on:
+      - element
+      - synapse
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./element:/usr/share/nginx/html:ro
     ports:
       - "80:80"
       - "443:443"
