@@ -3,7 +3,6 @@ package main
 import (
     "encoding/json"
     "fmt"
-    "io"
     "log"
     "net/http"
     "os"
@@ -59,11 +58,15 @@ func provision(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         log.Println(err)
         w.WriteHeader(http.StatusInternalServerError)
-        io.WriteString(w, string(out))
+        if _, werr := w.Write(out); werr != nil {
+            log.Println("failed to write response body:", werr)
+        }
         return
     }
     resp := map[string]string{"vmid": vmid, "output": string(out)}
-    json.NewEncoder(w).Encode(resp)
+    if err := json.NewEncoder(w).Encode(resp); err != nil {
+        log.Println("failed to encode response:", err)
+    }
 }
 
 func main() {
