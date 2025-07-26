@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  synapse:
+    image: matrixdotorg/synapse:latest
+    environment:
+      - SYNAPSE_ANTIVIRUS_ENABLED=true
+      - SYNAPSE_ANTIVIRUS_HOST=clamav
+      - SYNAPSE_ANTIVIRUS_PORT=3310
+    depends_on:
+      - clamav
+
+  clamav:
+    image: clamav/clamav:latest
+    ports:
+      - "3310:3310"
+
