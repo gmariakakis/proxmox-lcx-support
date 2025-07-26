@@ -1,13 +1,57 @@
-# proxmox-lcx-support
+# gxenon-signal-lxc
 
-This repository contains helper scripts for deploying the Element web interface using Docker and serving it with Caddy.
+`gxenon-signal-lxc` provides a one command deployment of a hardened Matrix stack on Proxmox using LXC. It installs Matrix Synapse, Element Web served by Caddy with automatic HTTPS, and an optional bootstrap API for provisioning additional containers.
 
-## Installation
+![diagram](docs/diagram.png)
 
-Run the install script with the hostname that should be used for automatic HTTPS certificates:
+## Quick start
 
 ```bash
-./scripts/install.sh example.com
+./install.sh --vmid 350 --template ubuntu --hostname chat
 ```
 
-The script generates a `Caddyfile` and `docker-compose.yml` configured to serve the Element static files.
+The script creates an unprivileged container and prints generated credentials and registration tokens. These values are also stored in `/root/SECRETS.txt` inside the container.
+
+### Requirements
+
+- Proxmox host with existing LXC templates in `/var/lib/vz/template/cache/`
+- Internet access for the container to install packages
+
+### Bootstrap API
+
+The optional API listens on `127.0.0.1:8787` and provisions new containers on demand:
+
+```bash
+export BOOTSTRAP_SECRET=mysecret
+./bootstrap-api
+```
+
+```
+POST /provision HTTP/1.1
+Authorization: Bearer <jwt>
+```
+
+The response contains the new VMID and admin token.
+
+For full usage instructions see the [docs](docs/).
+
+## Quick-start on Proxmox host
+
+```bash
+# on PVE node
+git clone https://github.com/gxenon/proxmox-lcx-support.git
+cd proxmox-lcx-support
+sudo ./install.sh --vmid 204 --template debian --hostname chat.example.com
+```
+
+`install.sh` will create a privileged Debian 12 container with nesting and fuse enabled,
+install Docker Engine and docker-compose, then deploy the Matrix stack (Synapse,
+Element, Postgres, Redis, Caddy with Cloudflare origin certs, ClamAV). It prints a join URL and a Cloudflare Tunnel command for the reverse-proxy.
+
+For advanced automation hit the Go bootstrap API running on `:8088` of the new container:
+
+```bash
+curl -XPOST -H "Authorization: Bearer $API_TOKEN" \
+     -d '{"template":"matrix","vmid":205,"fqdn":"extra.gxenon.com"}' \
+     https://chat-node.local:8088/api/v1/provision
+```
