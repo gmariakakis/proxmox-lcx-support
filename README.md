@@ -22,7 +22,7 @@ The script creates an unprivileged container and prints generated credentials an
 The optional API listens on `127.0.0.1:8787` and provisions new containers on demand:
 
 ```bash
-export BOOTSTRAP_SECRET=mysecret
+expor BOOTSTRAP_SECRET=mysecret
 ./bootstrap-api
 ```
 
@@ -39,17 +39,27 @@ For full usage instructions see the [docs](docs/).
 
 ```bash
 # on PVE node
+// 7zfnjt-codex/create-open-source-github-repository-gxenon-signal-lxc
 git clone https://github.com/gmariakakis/proxmox-lcx-support.git
 cd proxmox-lcx-support
 sudo ./install.sh -c 204 -d /tank/lxc \
                   --fqdn chat.gxenon.com \
                   --admin-email you@example.com
-```
+
+git clone https://github.com/gxenon/proxmox-lcx-support.git
+cd proxmox-lcx-support
+sudo ./install.sh --vmid 204 --template debian --hostname chat.example.com
+ main
+
 
 `install.sh` will create a privileged Debian 12 container with nesting and fuse enabled,
 install Docker Engine and docker-compose, then deploy the Matrix stack (Synapse,
+// 7zfnjt-codex/create-open-source-github-repository-gxenon-signal-lxc
 Element, Postgres, Redis, Caddy with Cloudflare origin certs, ClamAV).
 It prints a join URL and a Cloudflare Tunnel command for the reverse-proxy.
+=======
+Element, Postgres, Redis, Caddy with Cloudflare origin certs, ClamAV). It prints a join URL and a Cloudflare Tunnel command for the reverse-proxy.
+ main
 
 For advanced automation hit the Go bootstrap API running on `:8088` of the new container:
 
