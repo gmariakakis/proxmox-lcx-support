@@ -61,7 +61,7 @@ sleep 5
 ###############################################################################
 pct exec "$VMID" -- bash -eu <<'INNER'
 apt-get update
-apt-get install -y docker.io docker-compose-plugin curl iptables
+DEBIAN_FRONTEND=noninteractive apt-get install -y docker.io docker-compose-plugin curl iptables iptables-persistent
 systemctl disable --now ssh || true
 
 # Harden IPTables (example – adapt as‑needed)
@@ -70,6 +70,9 @@ iptables -A INPUT -i lo -j ACCEPT
 iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 iptables -A INPUT -p tcp --dport 80  -j ACCEPT
 iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+
+# Persist IPTables rules
+iptables-save >/etc/iptables/rules.v4
 
 mkdir -p /opt/chat
 INNER
